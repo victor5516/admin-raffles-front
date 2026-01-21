@@ -3,39 +3,67 @@ import { ActiveRaffles } from "@/components/dashboard/ActiveRaffles";
 // import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { dashboardService, type DashboardOverviewResponse } from "@/services/dashboard.service";
+import { currenciesService, type Currency } from "@/services/currencies.service";
 
 export function DashboardPage() {
   const [overview, setOverview] = useState<DashboardOverviewResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [selectedCurrencyId, setSelectedCurrencyId] = useState<string | null>(null);
+  const [currenciesLoaded, setCurrenciesLoaded] = useState(false);
 
+  // Load currencies on mount
   useEffect(() => {
     let isMounted = true;
 
-    async function load() {
+    async function loadCurrencies() {
       try {
-        setIsLoading(true);
-        setError(null);
-        const data = await dashboardService.getDashboardOverview();
+        const data = await currenciesService.listCurrencies();
         if (!isMounted) return;
-        setOverview(data);
+        setCurrencies(data);
+
+        // Default to USD (symbol === "USD"), fallback to first currency
+        const usdCurrency = data.find((c) => c.symbol === "USD");
+        const defaultCurrency = usdCurrency ?? data[0];
+        if (defaultCurrency) {
+          setSelectedCurrencyId(defaultCurrency.uid);
+        }
+        setCurrenciesLoaded(true);
       } catch (e) {
-        console.error("Failed to load dashboard overview:", e);
+        console.error("Failed to load currencies:", e);
         if (!isMounted) return;
-        setError(e instanceof Error ? e.message : "Error al cargar el dashboard");
-      } finally {
-        if (!isMounted) return;
-        setIsLoading(false);
+        setCurrenciesLoaded(true); // Allow dashboard to load even if currencies fail
       }
     }
 
-    load();
+    loadCurrencies();
     return () => {
       isMounted = false;
     };
   }, []);
+
+  // Load dashboard when selectedCurrencyId changes (and currencies are loaded)
+  const loadDashboard = useCallback(async (currencyId: string | null) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await dashboardService.getDashboardOverview(currencyId ?? undefined);
+      setOverview(data);
+    } catch (e) {
+      console.error("Failed to load dashboard overview:", e);
+      setError(e instanceof Error ? e.message : "Error al cargar el dashboard");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!currenciesLoaded) return;
+    loadDashboard(selectedCurrencyId);
+  }, [selectedCurrencyId, currenciesLoaded, loadDashboard]);
 
   const formatPercent = (value: number) => {
     const rounded = Math.round(Number.isFinite(value) ? value : 0);
@@ -44,14 +72,19 @@ export function DashboardPage() {
   };
 
   const formatCount = useMemo(() => new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }), []);
-  const formatCurrency = useMemo(
-    () =>
-      new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        maximumFractionDigits: 0,
-      }),
-    [],
+
+  const selectedCurrency = useMemo(
+    () => currencies.find((c) => c.uid === selectedCurrencyId),
+    [currencies, selectedCurrencyId],
+  );
+
+  const formatRevenue = useCallback(
+    (value: number) => {
+      const formatted = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
+      const symbol = selectedCurrency?.symbol ?? "$";
+      return `${symbol} ${formatted}`;
+    },
+    [selectedCurrency],
   );
 
   const metrics = overview?.metrics;
@@ -96,7 +129,7 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Ingresos totales"
-          value={formatCurrency.format(metrics?.revenue.current ?? 0)}
+          value={formatRevenue(metrics?.revenue.current ?? 0)}
           change={formatPercent(metrics?.revenue.changePercent ?? 0)}
           isPositive={metrics?.revenue.isPositive}
           icon="payments"
@@ -108,6 +141,19 @@ export function DashboardPage() {
                 <path d="M0,50 Q25,40 50,20 T100,5"></path>
               </svg>
             </div>
+          }
+          footer={
+            <select
+              value={selectedCurrencyId ?? ""}
+              onChange={(e) => setSelectedCurrencyId(e.target.value || null)}
+              className="w-full h-8 rounded-md border border-border-subtle bg-background-dark px-2 py-1 text-xs ring-offset-background placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors text-slate-200"
+            >
+              {currencies.map((currency) => (
+                <option key={currency.uid} value={currency.uid}>
+                  {currency.symbol} - {currency.name}
+                </option>
+              ))}
+            </select>
           }
         />
         <MetricCard

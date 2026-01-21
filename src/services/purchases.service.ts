@@ -1,4 +1,4 @@
-import { fetchApi } from './api';
+import { fetchApi, API_URL } from './api';
 import { type RaffleListItem } from './raffles.service';
 
 export enum PurchaseStatus {
@@ -52,6 +52,7 @@ export interface ListPurchasesParams {
   currency?: string;
   status?: PurchaseStatus;
   nationalId?: string;
+  paymentMethodId?: string;
   ticketNumber?: number;
   page?: number;
   limit?: number;
@@ -72,6 +73,7 @@ export const purchasesService = {
     if (params.currency) query.append('currency', params.currency);
     if (params.status) query.append('status', params.status);
     if (params.nationalId) query.append('nationalId', params.nationalId);
+    if (params.paymentMethodId) query.append('paymentMethodId', params.paymentMethodId);
     if (params.ticketNumber !== undefined) query.append('ticketNumber', params.ticketNumber.toString());
     if (params.page) query.append('page', params.page.toString());
     if (params.limit) query.append('limit', params.limit.toString());
@@ -88,5 +90,58 @@ export const purchasesService = {
       method: 'PATCH',
       body: JSON.stringify({ status }),
     });
+  },
+
+  async exportPurchases(params: Omit<ListPurchasesParams, 'page' | 'limit'>) {
+    const token = localStorage.getItem('raffleadmin_token');
+
+    const response = await fetch(`${API_URL}/purchases/export`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        raffleId: params.raffleId,
+        currency: params.currency,
+        status: params.status,
+        nationalId: params.nationalId,
+        paymentMethodId: params.paymentMethodId,
+        ticketNumber: params.ticketNumber,
+      }),
+    });
+
+    if (response.status === 401) {
+      localStorage.removeItem('raffleadmin_token');
+      window.location.href = '/login';
+      throw new Error('Unauthorized');
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Error al exportar');
+    }
+
+    // Get the blob and trigger download
+    const blob = await response.blob();
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = `ordenes-${params.currency || 'todas'}-${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (match) {
+        filename = match[1];
+      }
+    }
+
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   },
 };

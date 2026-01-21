@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import { purchasesService, type Purchase, PurchaseStatus } from "@/services/purchases.service";
+import { paymentMethodsService, type PaymentMethod } from "@/services/payment-methods.service";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -13,10 +14,17 @@ export function OrdersTablePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [total, setTotal] = useState(0);
 
+  // Payment methods for filter
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+
   // Filters
   const [statusFilter, setStatusFilter] = useState<PurchaseStatus | "">("");
   const [nationalIdFilter, setNationalIdFilter] = useState("");
   const [ticketNumberFilter, setTicketNumberFilter] = useState("");
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
+
+  // Export state
+  const [isExporting, setIsExporting] = useState(false);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,23 +36,45 @@ export function OrdersTablePage() {
   const [viewAi, setViewAi] = useState<any | null>(null);
   const [viewTickets, setViewTickets] = useState<{ tickets: number[], customerName: string } | null>(null);
 
+  // Track if initial load has completed
+  const isInitialLoadRef = useRef(true);
+
+  // Load payment methods filtered by currency
   useEffect(() => {
-    loadPurchases();
-  }, [currency, raffleId, currentPage, statusFilter, nationalIdFilter, ticketNumberFilter]); // Debounce logic ideally needed for text inputs
+    const loadPaymentMethods = async () => {
+      try {
+        const allMethods = await paymentMethodsService.listPaymentMethods();
+        // Filter by current currency
+        const filtered = currency
+          ? allMethods.filter((pm) => pm.currency === currency)
+          : allMethods;
+        setPaymentMethods(filtered);
+      } catch (error) {
+        console.error("Failed to load payment methods:", error);
+      }
+    };
+    loadPaymentMethods();
+  }, [currency]);
+
   const getCurrencyLabel = (paymentMethod?: Purchase["paymentMethod"]) => {
     if (!paymentMethod?.currency) return "-";
     return typeof paymentMethod.currency === "string"
       ? paymentMethod.currency
       : paymentMethod.currency.symbol;
   };
-  const loadPurchases = async () => {
+
+  const loadPurchases = useCallback(async (silent = false) => {
     try {
-      setIsLoading(true);
+      // Only show loading spinner on initial load or explicit reloads (not polling)
+      if (!silent) {
+        setIsLoading(true);
+      }
       const data = await purchasesService.listPurchases({
         currency,
         raffleId: raffleId || undefined,
         status: statusFilter || undefined,
         nationalId: nationalIdFilter || undefined,
+        paymentMethodId: paymentMethodFilter || undefined,
         ticketNumber: ticketNumberFilter ? Number(ticketNumberFilter) : undefined,
         page: currentPage,
         limit: itemsPerPage
@@ -54,9 +84,26 @@ export function OrdersTablePage() {
     } catch (error) {
       console.error("Failed to list purchases:", error);
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
+      isInitialLoadRef.current = false;
     }
-  };
+  }, [currency, raffleId, currentPage, statusFilter, nationalIdFilter, paymentMethodFilter, ticketNumberFilter]);
+
+  // Initial load and when filters/pagination change
+  useEffect(() => {
+    loadPurchases(false);
+  }, [loadPurchases]);
+
+  // Polling every 5 seconds (silent refresh - no loading flicker)
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      loadPurchases(true);
+    }, 2000);
+
+    return () => clearInterval(intervalId);
+  }, [loadPurchases]);
 
   const handleStatusUpdate = async (uid: string, newStatus: PurchaseStatus) => {
     if (!confirm(`¿Estás seguro de cambiar el estado a ${newStatus}?`)) return;
@@ -79,6 +126,25 @@ export function OrdersTablePage() {
     });
   };
 
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      await purchasesService.exportPurchases({
+        currency,
+        raffleId: raffleId || undefined,
+        status: statusFilter || undefined,
+        nationalId: nationalIdFilter || undefined,
+        paymentMethodId: paymentMethodFilter || undefined,
+        ticketNumber: ticketNumberFilter ? Number(ticketNumberFilter) : undefined,
+      });
+    } catch (error) {
+      console.error("Failed to export:", error);
+      alert("Error al exportar las órdenes");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <>
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
@@ -97,10 +163,18 @@ export function OrdersTablePage() {
           </h2>
           {purchases.length > 0 && purchases[0].raffle?.title && <p className="text-slate-400 text-sm mt-1">Rifa: {purchases[0].raffle.title}</p>}
         </div>
+        <Button
+          onClick={handleExport}
+          disabled={isExporting}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+        >
+          <span className="material-symbols-outlined text-[18px]">download</span>
+          {isExporting ? "Exportando..." : "Descargar Excel"}
+        </Button>
       </header>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-card-dark border border-border-subtle p-4 rounded-xl">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 bg-card-dark border border-border-subtle p-4 rounded-xl">
         <div>
             <label className="text-xs text-slate-500 mb-1 block">Estado</label>
             <select
@@ -113,6 +187,19 @@ export function OrdersTablePage() {
                 <option value={PurchaseStatus.VERIFIED}>Verificado</option>
                 <option value={PurchaseStatus.REJECTED}>Rechazado</option>
                 <option value={PurchaseStatus.MANUAL_REVIEW}>Revisión Manual</option>
+            </select>
+        </div>
+        <div>
+            <label className="text-xs text-slate-500 mb-1 block">Método de Pago</label>
+            <select
+                className="w-full h-10 px-3 rounded-lg bg-background-dark border border-border-subtle text-slate-200 text-sm focus:outline-none focus:border-primary/50"
+                value={paymentMethodFilter}
+                onChange={(e) => setPaymentMethodFilter(e.target.value)}
+            >
+                <option value="">Todos</option>
+                {paymentMethods.map((pm) => (
+                    <option key={pm.uid} value={pm.uid}>{pm.name}</option>
+                ))}
             </select>
         </div>
         <div>
@@ -139,6 +226,7 @@ export function OrdersTablePage() {
             <Button
                 onClick={() => {
                     setStatusFilter("");
+                    setPaymentMethodFilter("");
                     setNationalIdFilter("");
                     setTicketNumberFilter("");
                 }}

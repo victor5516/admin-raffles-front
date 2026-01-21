@@ -1,8 +1,14 @@
-import { userProfile } from '@/data/mock';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function Sidebar() {
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
   return (
     <aside className="w-64 flex-shrink-0 border-r border-border-subtle bg-background-dark flex flex-col justify-between hidden md:flex h-full">
       <div className="p-6">
@@ -29,19 +35,21 @@ export function Sidebar() {
 
       {/* Bottom Actions */}
       <div className="p-6 border-t border-border-subtle flex flex-col gap-1">
-        <a className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200" href="#">
-          <span className="material-symbols-outlined">settings</span>
-          <span className="font-medium text-sm">Configuración</span>
-        </a>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200 w-full text-left"
+        >
+          <span className="material-symbols-outlined">logout</span>
+          <span className="font-medium text-sm">Cerrar sesión</span>
+        </button>
 
         <div className="mt-4 flex items-center gap-3 p-3 rounded-lg bg-card-dark border border-border-subtle">
-          <div
-            className="size-9 rounded-full bg-slate-700 bg-cover bg-center"
-            style={{ backgroundImage: `url('${userProfile.avatar}')` }}
-          ></div>
+          <div className="size-9 rounded-full bg-slate-700 flex items-center justify-center">
+            <span className="material-symbols-outlined text-slate-400" style={{ fontSize: '20px' }}>person</span>
+          </div>
           <div className="flex flex-col min-w-0">
-            <p className="text-sm font-medium text-white truncate">{userProfile.name}</p>
-            <p className="text-xs text-slate-500 truncate">{userProfile.role}</p>
+            <p className="text-sm font-medium text-white truncate">{user?.full_name || 'Admin'}</p>
+            <p className="text-xs text-slate-500 truncate">{user?.email || ''}</p>
           </div>
         </div>
       </div>

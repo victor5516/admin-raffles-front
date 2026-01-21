@@ -9,9 +9,10 @@ interface MetricCardProps {
   iconColor: string;
   iconBg: string;
   decoration?: React.ReactNode;
+  footer?: React.ReactNode;
 }
 
-export function MetricCard({ title, value, change, isPositive, icon, iconColor, iconBg, decoration }: MetricCardProps) {
+export function MetricCard({ title, value, change, isPositive, icon, iconColor, iconBg, decoration, footer }: MetricCardProps) {
   const isNeutral = isPositive === undefined || change === "0%";
 
   return (
@@ -33,6 +34,7 @@ export function MetricCard({ title, value, change, isPositive, icon, iconColor, 
         <p className="text-sm font-medium text-slate-400">{title}</p>
         <h3 className={cn("font-display text-2xl font-bold tracking-tight", title === "Ingresos totales" ? "text-accent-gold" : "text-white")}>{value}</h3>
       </div>
+      {footer && <div className="mt-3 relative z-10">{footer}</div>}
     </div>
   );
 }

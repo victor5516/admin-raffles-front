@@ -31,10 +31,19 @@ export const authService = {
     return response;
   },
 
-  logout() {
-    localStorage.removeItem('raffleadmin_token');
-    localStorage.removeItem('raffleadmin_user');
-    window.location.href = '/login';
+  async logout(): Promise<void> {
+    try {
+      await fetchApi('/admins/logout', {
+        method: 'POST',
+        skipUnauthorizedRedirect: true,
+      });
+    } catch {
+      // Continue with local logout even if server call fails
+    } finally {
+      localStorage.removeItem('raffleadmin_token');
+      localStorage.removeItem('raffleadmin_user');
+      window.location.href = '/login';
+    }
   },
 
   getToken(): string | null {

@@ -26,8 +26,11 @@ export type DashboardOverviewResponse = {
 };
 
 export const dashboardService = {
-  async getDashboardOverview() {
-    return fetchApi<DashboardOverviewResponse>("/dashboard/overview");
+  async getDashboardOverview(currencyId?: string) {
+    const params = new URLSearchParams();
+    if (currencyId) params.set("currencyId", currencyId);
+    const query = params.toString();
+    return fetchApi<DashboardOverviewResponse>(`/dashboard/overview${query ? `?${query}` : ""}`);
   },
 };
 
