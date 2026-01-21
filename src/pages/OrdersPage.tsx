@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { currenciesService, type Currency } from "@/services/currencies.service";
 import { rafflesService, type RaffleListItem } from "@/services/raffles.service";
+import { purchasesService } from "@/services/purchases.service";
 
 export function OrdersPage() {
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [raffles, setRaffles] = useState<RaffleListItem[]>([]);
   const [isLoadingCurrencies, setIsLoadingCurrencies] = useState(false);
   const [isLoadingRaffles, setIsLoadingRaffles] = useState(true);
+  const [orderCounts, setOrderCounts] = useState<Record<string, number>>({});
+  const [isLoadingCounts, setIsLoadingCounts] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const raffleId = searchParams.get('raffleId');
 
@@ -20,6 +23,14 @@ export function OrdersPage() {
       loadCurrencies();
     }
   }, [raffleId]);
+
+  useEffect(() => {
+    if (raffleId && currencies.length > 0) {
+      loadOrderCounts();
+    } else {
+      setOrderCounts({});
+    }
+  }, [raffleId, currencies]);
 
   const loadRaffles = async () => {
     try {
@@ -45,6 +56,38 @@ export function OrdersPage() {
     }
   };
 
+  const loadOrderCounts = async () => {
+    if (!raffleId) return;
+
+    try {
+      setIsLoadingCounts(true);
+      const counts: Record<string, number> = {};
+
+      // Fetch counts for each currency in parallel
+      const countPromises = currencies.map(async (currency) => {
+        try {
+          const response = await purchasesService.listPurchases({
+            raffleId,
+            currency: currency.symbol,
+            page: 1,
+            limit: 1, // We only need the total, not the items
+          });
+          counts[currency.uid] = response.total;
+        } catch (error) {
+          console.error(`Failed to load order count for ${currency.symbol}:`, error);
+          counts[currency.uid] = 0;
+        }
+      });
+
+      await Promise.all(countPromises);
+      setOrderCounts(counts);
+    } catch (error) {
+      console.error("Failed to load order counts:", error);
+    } finally {
+      setIsLoadingCounts(false);
+    }
+  };
+
   const handleRaffleClick = (raffleUid: string) => {
     setSearchParams({ raffleId: raffleUid });
   };
@@ -52,6 +95,7 @@ export function OrdersPage() {
   const handleBackToRaffles = () => {
     setSearchParams({});
     setCurrencies([]);
+    setOrderCounts({});
   };
 
   const getRaffleInitials = (title: string) => {
@@ -107,7 +151,20 @@ export function OrdersPage() {
                 </div>
 
                 <h3 className="text-xl font-bold text-white mb-1">{currency.name}</h3>
-                <p className="text-sm text-slate-400">Ver ordenes en {currency.name}</p>
+                <p className="text-sm text-slate-400 mb-2">Ver ordenes en {currency.name}</p>
+
+                {isLoadingCounts ? (
+                  <div className="flex items-center gap-2 text-slate-500">
+                    <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                    <span className="text-xs">Cargando...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-primary">
+                      {orderCounts[currency.uid] ?? 0} {orderCounts[currency.uid] === 1 ? 'orden' : 'ordenes'}
+                    </span>
+                  </div>
+                )}
 
                 <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
