@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '@/services/auth.service';
+import { authService, AdminRole } from '@/services/auth.service';
 import type { Admin, LoginCredentials } from '@/services/auth.service';
 
 interface AuthContextType {
@@ -23,8 +23,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const storedUser = authService.getUser();
 
       if (token && storedUser) {
+        // Handle backward compatibility: if user doesn't have role, default to VERIFIER
+        // This ensures existing sessions continue to work
+        const userWithRole: Admin = {
+          ...storedUser,
+          role: storedUser.role || AdminRole.VERIFIER,
+        };
         setIsAuthenticated(true);
-        setUser(storedUser);
+        setUser(userWithRole);
       } else {
         setIsAuthenticated(false);
         setUser(null);

@@ -1,6 +1,61 @@
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { AdminRole } from '@/services/auth.service';
+
+interface NavItem {
+  to: string;
+  icon: string;
+  label: string;
+  end?: boolean;
+  allowedRoles: AdminRole[];
+}
+
+const NAV_ITEMS: NavItem[] = [
+  {
+    to: '/',
+    icon: 'dashboard',
+    label: 'Panel',
+    end: true,
+    allowedRoles: [AdminRole.SUPER_ADMIN, AdminRole.VERIFIER],
+  },
+  {
+    to: '/rifas',
+    icon: 'confirmation_number',
+    label: 'Rifas',
+    allowedRoles: [AdminRole.SUPER_ADMIN],
+  },
+  {
+    to: '/ordenes',
+    icon: 'receipt_long',
+    label: 'Ordenes',
+    allowedRoles: [AdminRole.SUPER_ADMIN, AdminRole.VERIFIER],
+  },
+  {
+    to: '/clientes',
+    icon: 'people',
+    label: 'Clientes',
+    allowedRoles: [AdminRole.SUPER_ADMIN],
+  },
+  {
+    to: '/payment-methods',
+    icon: 'payments',
+    label: 'Métodos de pago',
+    allowedRoles: [AdminRole.SUPER_ADMIN],
+  },
+  {
+    to: '/divisas',
+    icon: 'currency_exchange',
+    label: 'Divisas',
+    allowedRoles: [AdminRole.SUPER_ADMIN],
+  },
+  {
+    to: '/admins',
+    icon: 'admin_panel_settings',
+    label: 'Administradores',
+    allowedRoles: [AdminRole.SUPER_ADMIN],
+  },
+];
 
 export function Sidebar() {
   const { user, logout } = useAuth();
@@ -8,6 +63,12 @@ export function Sidebar() {
   const handleLogout = async () => {
     await logout();
   };
+
+  // Filter nav items based on user role
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (!user?.role) return false;
+    return item.allowedRoles.includes(user.role);
+  });
 
   return (
     <aside className="w-64 flex-shrink-0 border-r border-border-subtle bg-background-dark flex flex-col justify-between hidden md:flex h-full">
@@ -25,12 +86,15 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex flex-col gap-2">
-          <NavItem to="/" icon="dashboard" label="Panel" end />
-          <NavItem to="/rifas" icon="confirmation_number" label="Rifas" />
-          <NavItem to="/ordenes" icon="receipt_long" label="Ordenes" />
-          <NavItem to="/clientes" icon="people" label="Clientes" />
-          <NavItem to="/payment-methods" icon="payments" label="Métodos de pago" />
-          <NavItem to="/divisas" icon="currency_exchange" label="Divisas" />
+          {visibleNavItems.map((item) => (
+            <NavItem
+              key={item.to}
+              to={item.to}
+              icon={item.icon}
+              label={item.label}
+              end={item.end}
+            />
+          ))}
         </nav>
       </div>
 

@@ -1,8 +1,14 @@
 import { fetchApi } from './api';
 
+export enum AdminRole {
+  SUPER_ADMIN = 'super_admin',
+  VERIFIER = 'verifier',
+}
+
 export interface Admin {
   email: string;
   full_name: string;
+  role: AdminRole;
 }
 
 export interface LoginResponse {
