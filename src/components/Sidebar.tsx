@@ -28,6 +28,7 @@ export function Sidebar() {
           <NavItem to="/" icon="dashboard" label="Panel" end />
           <NavItem to="/rifas" icon="confirmation_number" label="Rifas" />
           <NavItem to="/ordenes" icon="receipt_long" label="Ordenes" />
+          <NavItem to="/clientes" icon="people" label="Clientes" />
           <NavItem to="/payment-methods" icon="payments" label="Métodos de pago" />
           <NavItem to="/divisas" icon="currency_exchange" label="Divisas" />
         </nav>

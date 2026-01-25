@@ -222,6 +222,17 @@ export function RafflesListPage() {
                                                     <span className="material-symbols-outlined text-[20px]">lock</span>
                                                 </button>
                                             )}
+
+                                            {/* Reactivate Button (only if closed) */}
+                                            {raffle.status === RaffleStatus.CLOSED && (
+                                                <button
+                                                    onClick={() => handleStatusUpdate(raffle.uid, RaffleStatus.ACTIVE)}
+                                                    className="text-slate-400 hover:text-emerald-400 p-2 rounded-full hover:bg-emerald-500/10 transition-colors"
+                                                    title="Reactivar Rifa"
+                                                >
+                                                    <span className="material-symbols-outlined text-[20px]">lock_open</span>
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

@@ -12,6 +12,8 @@ import { CreateCurrencyPage } from "@/pages/CreateCurrencyPage";
 import { EditCurrencyPage } from "@/pages/EditCurrencyPage";
 import { OrdersPage } from "@/pages/OrdersPage";
 import { OrdersTablePage } from "@/pages/OrdersTablePage";
+import { CustomersPage } from "@/pages/CustomersPage";
+import { CustomerDetailPage } from "@/pages/CustomerDetailPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
@@ -42,6 +44,8 @@ function App() {
           <Route path="/divisas/editar/:uid" element={<EditCurrencyPage />} />
           <Route path="/ordenes" element={<OrdersPage />} />
           <Route path="/ordenes/:currency" element={<OrdersTablePage />} />
+          <Route path="/clientes" element={<CustomersPage />} />
+          <Route path="/clientes/:uid" element={<CustomerDetailPage />} />
         </Route>
       </Route>
     </Routes>

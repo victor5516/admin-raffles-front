@@ -6,14 +6,17 @@ import { RaffleStatus } from "@/services/raffles.service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { Textarea } from "@/components/ui/textarea";
 import * as z from "zod";
 
 const raffleSchema = z.object({
   title: z.string().min(3, "El título debe tener al menos 3 caracteres"),
   total_tickets: z.number().min(1, "Debe haber al menos 1 ticket"),
+  description: z.string().optional(),
   ticket_price: z.number().min(0, "El precio no puede ser negativo"),
   digits_length: z.number().min(1, "Mínimo 1 dígito").optional(),
   deadline: z.string().refine((val) => val !== "", "Fecha límite requerida"),
+  min_tickets_per_purchase: z.number().min(1, "Mínimo 1 ticket"),
 });
 
 export type RaffleFormValues = z.infer<typeof raffleSchema>;
@@ -44,8 +47,9 @@ export function RaffleForm({
     resolver: zodResolver(raffleSchema),
     defaultValues: {
       total_tickets: 1000,
-      ticket_price: 25.00,
-      digits_length: 3,
+      ticket_price: 3.00,
+      digits_length: 1,
+      min_tickets_per_purchase: 1,
       ...initialValues,
     },
   });
@@ -104,7 +108,14 @@ export function RaffleForm({
                 )}
               </div>
 
-              {/* Description field removed */}
+              <div className="space-y-2">
+                <Label htmlFor="description">Descripción de la Rifa</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Ej. Este es un sorteo de Tesla Model S 2024"
+                  {...register("description")}
+                />
+              </div>
 
             </div>
 
@@ -180,17 +191,17 @@ export function RaffleForm({
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="digits_length">Longitud de Dígitos (Opcional)</Label>
+              <Label htmlFor="digits_length">Compra mínima de tickets</Label>
               <Input
-                id="digits_length"
+                id="min_tickets_per_purchase"
                 type="number"
-                placeholder="3"
-                startIcon={<span className="material-symbols-outlined text-[18px]">123</span>}
-                {...register("digits_length", { valueAsNumber: true })}
-                className={errors.digits_length ? "border-red-500 focus-visible:ring-red-500" : ""}
+                placeholder="1"
+                startIcon={<span className="material-symbols-outlined text-[18px]">confirmation_number</span>}
+                {...register("min_tickets_per_purchase", { valueAsNumber: true })}
+                className={errors.min_tickets_per_purchase ? "border-red-500 focus-visible:ring-red-500" : ""}
               />
-              {errors.digits_length && (
-                <p className="text-xs text-red-500">{errors.digits_length.message}</p>
+              {errors.min_tickets_per_purchase && (
+                <p className="text-xs text-red-500">{errors.min_tickets_per_purchase.message}</p>
               )}
             </div>
           </div>
