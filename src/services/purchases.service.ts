@@ -56,6 +56,11 @@ export interface ListPurchasesParams {
   nationalId?: string;
   paymentMethodId?: string;
   ticketNumber?: number;
+  customerName?: string;
+  email?: string;
+  phone?: string;
+  dateFrom?: string;
+  dateTo?: string;
   page?: number;
   limit?: number;
 }
@@ -77,6 +82,11 @@ export const purchasesService = {
     if (params.nationalId) query.append('nationalId', params.nationalId);
     if (params.paymentMethodId) query.append('paymentMethodId', params.paymentMethodId);
     if (params.ticketNumber !== undefined) query.append('ticketNumber', params.ticketNumber.toString());
+    if (params.customerName) query.append('customerName', params.customerName);
+    if (params.email) query.append('email', params.email);
+    if (params.phone) query.append('phone', params.phone);
+    if (params.dateFrom) query.append('dateFrom', params.dateFrom);
+    if (params.dateTo) query.append('dateTo', params.dateTo);
     if (params.page) query.append('page', params.page.toString());
     if (params.limit) query.append('limit', params.limit.toString());
 
@@ -117,6 +127,11 @@ export const purchasesService = {
         nationalId: params.nationalId,
         paymentMethodId: params.paymentMethodId,
         ticketNumber: params.ticketNumber,
+        customerName: params.customerName,
+        email: params.email,
+        phone: params.phone,
+        dateFrom: params.dateFrom,
+        dateTo: params.dateTo,
       }),
     });
 

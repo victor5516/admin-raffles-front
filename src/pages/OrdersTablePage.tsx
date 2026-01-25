@@ -23,6 +23,11 @@ export function OrdersTablePage() {
   const [nationalIdFilter, setNationalIdFilter] = useState("");
   const [ticketNumberFilter, setTicketNumberFilter] = useState("");
   const [paymentMethodFilter, setPaymentMethodFilter] = useState("");
+  const [customerNameFilter, setCustomerNameFilter] = useState("");
+  const [emailFilter, setEmailFilter] = useState("");
+  const [phoneFilter, setPhoneFilter] = useState("");
+  const [dateFromFilter, setDateFromFilter] = useState("");
+  const [dateToFilter, setDateToFilter] = useState("");
 
   // Export state
   const [isExporting, setIsExporting] = useState(false);
@@ -82,6 +87,11 @@ export function OrdersTablePage() {
         nationalId: nationalIdFilter || undefined,
         paymentMethodId: paymentMethodFilter || undefined,
         ticketNumber: ticketNumberFilter ? Number(ticketNumberFilter) : undefined,
+        customerName: customerNameFilter || undefined,
+        email: emailFilter || undefined,
+        phone: phoneFilter || undefined,
+        dateFrom: dateFromFilter || undefined,
+        dateTo: dateToFilter || undefined,
         page: currentPage,
         limit: itemsPerPage
       });
@@ -95,7 +105,7 @@ export function OrdersTablePage() {
       }
       isInitialLoadRef.current = false;
     }
-  }, [currency, raffleId, currentPage, statusFilter, nationalIdFilter, paymentMethodFilter, ticketNumberFilter]);
+  }, [currency, raffleId, currentPage, statusFilter, nationalIdFilter, paymentMethodFilter, ticketNumberFilter, customerNameFilter, emailFilter, phoneFilter, dateFromFilter, dateToFilter]);
 
   // Initial load and when filters/pagination change
   useEffect(() => {
@@ -148,6 +158,11 @@ export function OrdersTablePage() {
         nationalId: nationalIdFilter || undefined,
         paymentMethodId: paymentMethodFilter || undefined,
         ticketNumber: ticketNumberFilter ? Number(ticketNumberFilter) : undefined,
+        customerName: customerNameFilter || undefined,
+        email: emailFilter || undefined,
+        phone: phoneFilter || undefined,
+        dateFrom: dateFromFilter || undefined,
+        dateTo: dateToFilter || undefined,
       });
     } catch (error) {
       console.error("Failed to export:", error);
@@ -225,7 +240,7 @@ export function OrdersTablePage() {
       </header>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 bg-card-dark border border-border-subtle p-4 rounded-xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6 bg-card-dark border border-border-subtle p-4 rounded-xl">
         <div>
             <label className="text-xs text-slate-500 mb-1 block">Estado</label>
             <select
@@ -273,6 +288,54 @@ export function OrdersTablePage() {
                 onChange={(e) => setTicketNumberFilter(e.target.value)}
             />
         </div>
+        <div>
+            <label className="text-xs text-slate-500 mb-1 block">Nombre Participante</label>
+            <input
+                type="text"
+                className="w-full h-10 px-3 rounded-lg bg-background-dark border border-border-subtle text-slate-200 text-sm focus:outline-none focus:border-primary/50"
+                placeholder="Buscar por nombre..."
+                value={customerNameFilter}
+                onChange={(e) => setCustomerNameFilter(e.target.value)}
+            />
+        </div>
+        <div>
+            <label className="text-xs text-slate-500 mb-1 block">Email</label>
+            <input
+                type="text"
+                className="w-full h-10 px-3 rounded-lg bg-background-dark border border-border-subtle text-slate-200 text-sm focus:outline-none focus:border-primary/50"
+                placeholder="Buscar por email..."
+                value={emailFilter}
+                onChange={(e) => setEmailFilter(e.target.value)}
+            />
+        </div>
+        <div>
+            <label className="text-xs text-slate-500 mb-1 block">Teléfono</label>
+            <input
+                type="text"
+                className="w-full h-10 px-3 rounded-lg bg-background-dark border border-border-subtle text-slate-200 text-sm focus:outline-none focus:border-primary/50"
+                placeholder="Buscar por teléfono..."
+                value={phoneFilter}
+                onChange={(e) => setPhoneFilter(e.target.value)}
+            />
+        </div>
+        <div>
+            <label className="text-xs text-slate-500 mb-1 block">Fecha Desde</label>
+            <input
+                type="date"
+                className="w-full h-10 px-3 rounded-lg bg-background-dark border border-border-subtle text-slate-200 text-sm focus:outline-none focus:border-primary/50"
+                value={dateFromFilter}
+                onChange={(e) => setDateFromFilter(e.target.value)}
+            />
+        </div>
+        <div>
+            <label className="text-xs text-slate-500 mb-1 block">Fecha Hasta</label>
+            <input
+                type="date"
+                className="w-full h-10 px-3 rounded-lg bg-background-dark border border-border-subtle text-slate-200 text-sm focus:outline-none focus:border-primary/50"
+                value={dateToFilter}
+                onChange={(e) => setDateToFilter(e.target.value)}
+            />
+        </div>
         <div className="flex items-end">
             <Button
                 onClick={() => {
@@ -280,6 +343,11 @@ export function OrdersTablePage() {
                     setPaymentMethodFilter("");
                     setNationalIdFilter("");
                     setTicketNumberFilter("");
+                    setCustomerNameFilter("");
+                    setEmailFilter("");
+                    setPhoneFilter("");
+                    setDateFromFilter("");
+                    setDateToFilter("");
                 }}
                 variant="outline"
                 className="w-full h-10 border-border-subtle text-slate-400 hover:text-white"
