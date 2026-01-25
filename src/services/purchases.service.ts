@@ -24,6 +24,7 @@ export interface Purchase {
   paymentMethod?: {
     uid: string;
     name: string;
+    accountHolderName?: string;
     currency:
     | string
     | {

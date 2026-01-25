@@ -295,52 +295,42 @@ export function OrdersTablePage() {
             <table className="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
                     <tr className="text-slate-400 text-xs uppercase tracking-wider border-b border-border-subtle/50 bg-white/[0.02]">
-                        <th className="px-6 py-4 font-semibold">Cliente</th>
-                        <th className="px-6 py-4 font-semibold">Cédula</th>
-                        <th className="px-6 py-4 font-semibold">Contacto</th>
-                        <th className="px-6 py-4 font-semibold">Tickets / Valor</th>
-                        <th className="px-6 py-4 font-semibold">Método</th>
+                        <th className="px-6 py-4 font-semibold">Participante</th>
+                        <th className="px-6 py-4 font-semibold">Vendedor</th>
+                        <th className="px-6 py-4 font-semibold">Método de Pago</th>
                         <th className="px-6 py-4 font-semibold">Referencia</th>
-                        <th className="px-6 py-4 font-semibold">Notas</th>
+                        <th className="px-6 py-4 font-semibold">Tickets / Valor</th>
                         <th className="px-6 py-4 font-semibold">Estado</th>
-                        <th className="px-6 py-4 font-semibold">Fecha</th>
+                        <th className="px-6 py-4 font-semibold">Fecha Compra</th>
+                        <th className="px-6 py-4 font-semibold">Fecha Verificación</th>
+                        <th className="px-6 py-4 font-semibold">Números</th>
+                        <th className="px-6 py-4 font-semibold">Notas</th>
                         <th className="px-6 py-4 font-semibold text-right sticky right-0 bg-card-dark border-l border-border-subtle/50">Acciones</th>
                     </tr>
                 </thead>
                 <tbody className="text-sm">
                     {isLoading ? (
-                        <tr><td colSpan={10} className="px-6 py-12 text-center text-slate-500">Cargando ordenes...</td></tr>
+                        <tr><td colSpan={11} className="px-6 py-12 text-center text-slate-500">Cargando ordenes...</td></tr>
                     ) : purchases.length === 0 ? (
-                        <tr><td colSpan={10} className="px-6 py-12 text-center text-slate-500">No se encontraron ordenes.</td></tr>
+                        <tr><td colSpan={11} className="px-6 py-12 text-center text-slate-500">No se encontraron ordenes.</td></tr>
                     ) : purchases.map((purchase) => (
                         <tr key={purchase.uid} className="group hover:bg-white/[0.02] border-b border-border-subtle/30 transition-colors last:border-0">
-                            <td className="px-6 py-4 font-medium text-slate-200">{purchase.customer.fullName}</td>
-                            <td className="px-6 py-4 text-slate-300 font-mono text-xs">{purchase.customer.nationalId}</td>
-                            <td className="px-6 py-4">
-                                <div className="flex flex-col text-xs">
-                                    <span className="text-slate-300">{purchase.customer.email}</span>
-                                    <span className="text-slate-500">{purchase.customer.phone}</span>
-                                </div>
-                            </td>
+                            {/* Participante: Cliente, Cédula y Contacto fusionados */}
                             <td className="px-6 py-4">
                                 <div className="flex flex-col gap-1">
-                                    <span className="font-medium text-white">{purchase.ticketQuantity} tickets</span>
-                                    <span className="text-xs text-slate-400">{Number(purchase.totalAmount).toFixed(2)} {getCurrencyLabel(purchase.paymentMethod)}</span>
-                                    {purchase.aiAnalysisResult && (
-                                        <span className={cn("text-[10px] flex items-center gap-1",
-                                            purchase.aiAnalysisResult.amount && Math.abs(Number(purchase.aiAnalysisResult.amount) - Number(purchase.totalAmount)) < 1 ? "text-emerald-400" : "text-red-400"
-                                        )}>
-                                            <span className="material-symbols-outlined text-[10px]">{purchase.aiAnalysisResult.amount && Math.abs(Number(purchase.aiAnalysisResult.amount) - Number(purchase.totalAmount)) < 1 ? 'check' : 'close'}</span>
-                                            IA: {purchase.aiAnalysisResult.amount || 'N/A'}
-                                        </span>
-                                    )}
-                                    {purchase.tickets && purchase.tickets.length > 0 && (
-                                        <span className="text-[10px] text-primary cursor-pointer hover:underline" title={purchase.tickets.map(t => t.ticketNumber).join(', ')}>
-                                            Ver tickets
-                                        </span>
-                                    )}
+                                    <span className="font-medium text-slate-200">{purchase.customer.fullName}</span>
+                                    <span className="text-slate-300 font-mono text-xs">C.I: {purchase.customer.nationalId}</span>
+                                    <div className="flex flex-col text-xs">
+                                        <span className="text-slate-400">{purchase.customer.email}</span>
+                                        <span className="text-slate-500">{purchase.customer.phone}</span>
+                                    </div>
                                 </div>
                             </td>
+                            {/* Vendedor: accountHolderName del paymentMethod */}
+                            <td className="px-6 py-4 text-slate-300">
+                                {purchase.paymentMethod?.accountHolderName || '-'}
+                            </td>
+                            {/* Método de Pago */}
                             <td className="px-6 py-4">
                                 <div className="flex flex-col">
                                     <span className="text-slate-300">{purchase.paymentMethod?.name || '-'}</span>
@@ -352,6 +342,7 @@ export function OrdersTablePage() {
                                     )}
                                 </div>
                             </td>
+                            {/* Referencia */}
                             <td className="px-6 py-4 font-mono text-xs">
                                 <div className="flex flex-col gap-1">
                                     <span className="text-slate-400">{purchase.bankReference}</span>
@@ -375,6 +366,51 @@ export function OrdersTablePage() {
                                     )}
                                 </div>
                             </td>
+                            {/* Tickets / Valor */}
+                            <td className="px-6 py-4">
+                                <div className="flex flex-col gap-1">
+                                    <span className="font-medium text-white">{purchase.ticketQuantity} tickets</span>
+                                    <span className="text-xs text-slate-400">{Number(purchase.totalAmount).toFixed(2)} {getCurrencyLabel(purchase.paymentMethod)}</span>
+                                    {purchase.aiAnalysisResult && (
+                                        <span className={cn("text-[10px] flex items-center gap-1",
+                                            purchase.aiAnalysisResult.amount && Math.abs(Number(purchase.aiAnalysisResult.amount) - Number(purchase.totalAmount)) < 1 ? "text-emerald-400" : "text-red-400"
+                                        )}>
+                                            <span className="material-symbols-outlined text-[10px]">{purchase.aiAnalysisResult.amount && Math.abs(Number(purchase.aiAnalysisResult.amount) - Number(purchase.totalAmount)) < 1 ? 'check' : 'close'}</span>
+                                            IA: {purchase.aiAnalysisResult.amount || 'N/A'}
+                                        </span>
+                                    )}
+                                </div>
+                            </td>
+                            {/* Estado */}
+                            <td className="px-6 py-4">
+                                <StatusBadge status={purchase.status} />
+                            </td>
+                            {/* Fecha Compra */}
+                            <td className="px-6 py-4 text-slate-500 text-xs">{formatDate(purchase.submittedAt)}</td>
+                            {/* Fecha Verificación */}
+                            <td className="px-6 py-4 text-slate-500 text-xs">
+                                {purchase.verifiedAt ? formatDate(purchase.verifiedAt) : '-'}
+                            </td>
+                            {/* Números: Lista de números de tickets comprados */}
+                            <td className="px-6 py-4">
+                                {purchase.ticketNumbers && purchase.ticketNumbers.length > 0 ? (
+                                    <div className="flex flex-wrap gap-1">
+                                        {purchase.ticketNumbers.slice(0, 5).map((num) => (
+                                            <span key={num} className="inline-block px-1.5 py-0.5 bg-primary/10 border border-primary/20 rounded text-xs font-mono text-primary">
+                                                {String(num).padStart(3, '0')}
+                                            </span>
+                                        ))}
+                                        {purchase.ticketNumbers.length > 5 && (
+                                            <span className="inline-block px-1.5 py-0.5 text-xs text-slate-500">
+                                                +{purchase.ticketNumbers.length - 5}
+                                            </span>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <span className="text-slate-600 text-xs">-</span>
+                                )}
+                            </td>
+                            {/* Notas */}
                             <td className="px-6 py-4">
                                 {editingId === purchase.uid ? (
                                     <div className="flex items-center gap-2">
@@ -404,10 +440,7 @@ export function OrdersTablePage() {
                                     </div>
                                 )}
                             </td>
-                            <td className="px-6 py-4">
-                                <StatusBadge status={purchase.status} />
-                            </td>
-                            <td className="px-6 py-4 text-slate-500 text-xs">{formatDate(purchase.submittedAt)}</td>
+                            {/* Acciones */}
                             <td className="px-6 py-4 text-right sticky right-0 bg-card-dark border-l border-border-subtle/50 group-hover:bg-[#1a1f2e] transition-colors">
                                 <div className="flex items-center justify-end gap-2">
                                     <button
