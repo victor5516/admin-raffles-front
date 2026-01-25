@@ -4,6 +4,7 @@ import { purchasesService, type Purchase, PurchaseStatus } from "@/services/purc
 import { paymentMethodsService, type PaymentMethod } from "@/services/payment-methods.service";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function OrdersTablePage() {
   const { currency } = useParams();
@@ -35,6 +36,11 @@ export function OrdersTablePage() {
   const [viewImage, setViewImage] = useState<string | null>(null);
   const [viewAi, setViewAi] = useState<any | null>(null);
   const [viewTickets, setViewTickets] = useState<{ tickets: number[], customerName: string } | null>(null);
+
+  // Inline Editing State (Notes)
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>("");
+  const editInputRef = useRef<HTMLInputElement>(null);
 
   // Track if initial load has completed
   const isInitialLoadRef = useRef(true);
@@ -96,11 +102,17 @@ export function OrdersTablePage() {
     loadPurchases(false);
   }, [loadPurchases]);
 
+  useEffect(() => {
+    if (editingId && editInputRef.current) {
+      editInputRef.current.focus();
+    }
+  }, [editingId]);
+
   // Polling every 5 seconds (silent refresh - no loading flicker)
   useEffect(() => {
     const intervalId = setInterval(() => {
       loadPurchases(true);
-    }, 2000);
+    }, 100000);
 
     return () => clearInterval(intervalId);
   }, [loadPurchases]);
@@ -142,6 +154,45 @@ export function OrdersTablePage() {
       alert("Error al exportar las órdenes");
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleStartEdit = (purchase: Purchase) => {
+    setEditingId(purchase.uid);
+    setEditValue(purchase.notes || "");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditValue("");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingId) return;
+
+    try {
+      // Optimistic update
+      setPurchases(prev => prev.map(p =>
+        p.uid === editingId ? { ...p, notes: editValue } : p
+      ));
+
+      await purchasesService.updatePurchase(editingId, {
+        notes: editValue
+      });
+
+      setEditingId(null);
+    } catch (error) {
+      console.error("Failed to update note:", error);
+      alert("Error al actualizar la nota. Se revertirán los cambios.");
+      loadPurchases(); // Revert changes on error
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSaveEdit();
+    } else if (e.key === "Escape") {
+      handleCancelEdit();
     }
   };
 
@@ -250,6 +301,7 @@ export function OrdersTablePage() {
                         <th className="px-6 py-4 font-semibold">Tickets / Valor</th>
                         <th className="px-6 py-4 font-semibold">Método</th>
                         <th className="px-6 py-4 font-semibold">Referencia</th>
+                        <th className="px-6 py-4 font-semibold">Notas</th>
                         <th className="px-6 py-4 font-semibold">Estado</th>
                         <th className="px-6 py-4 font-semibold">Fecha</th>
                         <th className="px-6 py-4 font-semibold text-right sticky right-0 bg-card-dark border-l border-border-subtle/50">Acciones</th>
@@ -322,6 +374,35 @@ export function OrdersTablePage() {
                                         </span>
                                     )}
                                 </div>
+                            </td>
+                            <td className="px-6 py-4">
+                                {editingId === purchase.uid ? (
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            ref={editInputRef}
+                                            type="text"
+                                            value={editValue}
+                                            onChange={(e) => setEditValue(e.target.value)}
+                                            onKeyDown={handleKeyDown}
+                                            onBlur={handleSaveEdit}
+                                            className="h-8 w-40 bg-background-dark border-primary/50 text-white text-xs"
+                                            placeholder="Añadir nota..."
+                                        />
+                                    </div>
+                                ) : (
+                                    <div
+                                        onDoubleClick={() => handleStartEdit(purchase)}
+                                        className="cursor-pointer hover:bg-white/5 px-2 py-1 -ml-2 rounded transition-colors min-h-[2rem] flex items-center max-w-[200px]"
+                                        title="Doble click para editar nota"
+                                    >
+                                        {purchase.notes ? (
+                                            <span className="text-xs text-slate-300 truncate block">{purchase.notes}</span>
+                                        ) : (
+                                            <span className="text-xs text-slate-600 italic">Sin notas...</span>
+                                        )}
+                                        <span className="material-symbols-outlined text-[14px] text-slate-500 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">edit</span>
+                                    </div>
+                                )}
                             </td>
                             <td className="px-6 py-4">
                                 <StatusBadge status={purchase.status} />

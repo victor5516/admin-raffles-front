@@ -38,6 +38,7 @@ export interface Purchase {
   ticketQuantity: number;
   paymentScreenshotUrl: string;
   bankReference: string;
+  notes?: string;
   status: PurchaseStatus;
   totalAmount: number;
   aiAnalysisResult?: any;
@@ -89,6 +90,13 @@ export const purchasesService = {
     return fetchApi<Purchase>(`/purchases/${uid}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
+    });
+  },
+
+  async updatePurchase(uid: string, data: Partial<Purchase>) {
+    return fetchApi<Purchase>(`/purchases/${uid}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
     });
   },
 

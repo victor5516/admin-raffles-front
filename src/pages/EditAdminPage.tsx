@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { adminsService, type AdminListItem } from "@/services/admins.service";
+import { adminsService } from "@/services/admins.service";
 import { AdminRole } from "@/services/auth.service";
 
 export function EditAdminPage() {
