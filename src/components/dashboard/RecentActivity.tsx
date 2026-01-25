@@ -111,7 +111,7 @@ export function RecentActivity() {
 
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-white truncate">{customer.name}</p>
-                  <p className="text-xs text-slate-400 truncate">{customer.email}</p>
+                  {/* <p className="text-xs text-slate-400 truncate">{customer.email}</p> */}
                 </div>
 
                 <div className="flex flex-col items-end flex-shrink-0">
