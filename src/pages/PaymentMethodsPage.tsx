@@ -106,6 +106,7 @@ export function PaymentMethodsPage() {
                     <thead>
                         <tr className="text-slate-400 text-xs uppercase tracking-wider border-b border-border-subtle/50 bg-white/[0.02]">
                             <th className="px-6 py-4 font-semibold w-[300px]">Nombre</th>
+                            <th className="px-6 py-4 font-semibold w-[200px]">Titular</th>
                             <th className="px-6 py-4 font-semibold">Monto Mínimo</th>
                             <th className="px-6 py-4 font-semibold">Moneda</th>
                             <th className="px-6 py-4 font-semibold w-[400px]">Datos de Pago</th>
@@ -115,7 +116,7 @@ export function PaymentMethodsPage() {
                     <tbody className="text-sm">
                         {isLoading ? (
                           <tr>
-                            <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                            <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                               Cargando métodos de pago...
                             </td>
                           </tr>
@@ -132,6 +133,13 @@ export function PaymentMethodsPage() {
                                             )}
                                             <span className="font-medium text-slate-200">{method.name}</span>
                                         </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {method.accountHolderName ? (
+                                            <span className="text-slate-300">{method.accountHolderName}</span>
+                                        ) : (
+                                            <span className="text-slate-500 italic">Sin titular</span>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className="font-medium text-white">{Number(method.minimumPaymentAmount).toFixed(2)} {method.currency}</span>
@@ -176,7 +184,7 @@ export function PaymentMethodsPage() {
                             ))}
                         {!isLoading && filteredMethods.length === 0 && (
                             <tr>
-                                <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                                <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                                     No se encontraron métodos de pago.
                                 </td>
                             </tr>

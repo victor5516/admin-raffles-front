@@ -10,6 +10,7 @@ import * as z from "zod";
 
 const paymentMethodSchema = z.object({
   name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
+  accountHolderName: z.string().min(3, "El nombre del titular debe tener al menos 3 caracteres").optional().or(z.literal("")),
   minimum_payment_amount: z.number().min(0, "El monto mínimo no puede ser negativo"),
   currency: z.string().min(1, "Debe seleccionar una moneda"),
   fields: z.array(
@@ -70,6 +71,7 @@ export function PaymentMethodForm({
     resolver: zodResolver(paymentMethodSchema),
     defaultValues: {
       name: "",
+      accountHolderName: "",
       minimum_payment_amount: 0,
       currency: "",
       fields: [{ key: "", value: "" }],
@@ -82,6 +84,7 @@ export function PaymentMethodForm({
     if (currencies.length > 0 && !initialValues?.currency) {
       reset({
         name: initialValues?.name || "",
+        accountHolderName: initialValues?.accountHolderName || "",
         minimum_payment_amount: initialValues?.minimum_payment_amount || 0,
         currency: currencies[0].symbol,
         fields: initialValues?.fields || [{ key: "", value: "" }],
@@ -90,6 +93,7 @@ export function PaymentMethodForm({
       // Ensure the currency from initialValues is set when currencies are loaded
       reset({
         name: initialValues?.name || "",
+        accountHolderName: initialValues?.accountHolderName || "",
         minimum_payment_amount: initialValues?.minimum_payment_amount || 0,
         currency: initialValues.currency,
         fields: initialValues?.fields || [{ key: "", value: "" }],
@@ -147,6 +151,19 @@ export function PaymentMethodForm({
                 />
                 {errors.name && (
                   <p className="text-xs text-red-500">{errors.name.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="accountHolderName">Nombre del Titular (Beneficiario)</Label>
+                <Input
+                  id="accountHolderName"
+                  placeholder="Ej: Jose Perez"
+                  {...register("accountHolderName")}
+                  className={errors.accountHolderName ? "border-red-500 focus-visible:ring-red-500" : ""}
+                />
+                {errors.accountHolderName && (
+                  <p className="text-xs text-red-500">{errors.accountHolderName.message}</p>
                 )}
               </div>
 

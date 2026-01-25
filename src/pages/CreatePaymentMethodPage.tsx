@@ -31,6 +31,7 @@ export function CreatePaymentMethodPage() {
       await paymentMethodsService.createPaymentMethod(
         {
           name: data.name,
+          accountHolderName: data.accountHolderName,
           minimum_payment_amount: data.minimum_payment_amount,
           currency_id: selectedCurrency.uid,
           payment_data: paymentData,

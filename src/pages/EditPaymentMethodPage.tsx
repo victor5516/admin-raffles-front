@@ -35,6 +35,7 @@ export function EditPaymentMethodPage() {
 
       setInitialValues({
         name: data.name,
+        accountHolderName: data.accountHolderName || "",
         minimum_payment_amount: Number(data.minimumPaymentAmount),
         currency: data.currency,
         fields: fields,
@@ -75,6 +76,7 @@ export function EditPaymentMethodPage() {
         uid,
         {
           name: data.name,
+          accountHolderName: data.accountHolderName,
           minimum_payment_amount: data.minimum_payment_amount,
           currency_id: selectedCurrency.uid,
           payment_data: paymentData,

@@ -1,6 +1,6 @@
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { ActiveRaffles } from "@/components/dashboard/ActiveRaffles";
-// import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState, useCallback } from "react";
@@ -186,14 +186,14 @@ export function DashboardPage() {
       </div>
 
       {/* Bento Grid for Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Active Raffles Section (Span 2) */}
         <ActiveRaffles items={overview?.activeRaffles ?? []} />
 
         {/* Right Column: Recent Activity & Winner Widget */}
-        {/* <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6">
           <RecentActivity />
-        </div> */}
+        </div>
       </div>
     </>
   );
