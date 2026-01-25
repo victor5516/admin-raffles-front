@@ -74,15 +74,15 @@ export function Sidebar() {
     <aside className="w-64 flex-shrink-0 border-r border-border-subtle bg-background-dark flex flex-col justify-between hidden md:flex h-full">
       <div className="p-6">
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-10">
+        <NavLink to="/" end className="flex items-center gap-3 mb-10 cursor-pointer hover:opacity-80 transition-opacity">
           <div className="size-10 rounded-lg bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-glow">
             <span className="material-symbols-outlined text-white" style={{ fontSize: '24px' }}>confirmation_number</span>
           </div>
           <div>
-            <h1 className="font-display font-bold text-white text-lg leading-tight">RaffleAdmin</h1>
+            <h1 className="font-display font-bold text-white text-lg leading-tight">Administrador</h1>
             <p className="text-xs text-slate-400 font-medium">Consola v2.0</p>
           </div>
-        </div>
+        </NavLink>
 
         {/* Navigation */}
         <nav className="flex flex-col gap-2">
