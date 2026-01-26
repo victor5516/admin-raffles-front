@@ -90,7 +90,7 @@ export function RafflesListPage() {
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-white tracking-tight mb-2">Rifas</h2>
-          <p className="text-slate-400">Gestiona y monitorea todos tus sorteos activos y finalizados.</p>
+          <p className="text-slate-400">Gestiona y monitorea todos tus eventos activos y finalizados.</p>
         </div>
         <div className="flex gap-3">
             <Link to="/rifas/crear">
