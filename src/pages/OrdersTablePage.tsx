@@ -232,14 +232,16 @@ export function OrdersTablePage() {
           </h2>
           {purchases.length > 0 && purchases[0].raffle?.title && <p className="text-slate-400 text-sm mt-1">Rifa: {purchases[0].raffle.title}</p>}
         </div>
-        <Button
-          onClick={handleExport}
-          disabled={isExporting}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
-        >
-          <span className="material-symbols-outlined text-[18px]">download</span>
-          {isExporting ? "Exportando..." : "Descargar Excel"}
-        </Button>
+        {user?.role !== AdminRole.VERIFIER && (
+          <Button
+            onClick={handleExport}
+            disabled={isExporting}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">download</span>
+            {isExporting ? "Exportando..." : "Descargar Excel"}
+          </Button>
+        )}
       </header>
 
       {/* Filters */}

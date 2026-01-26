@@ -109,10 +109,12 @@ export function DashboardPage() {
           <p className="text-slate-400">Bienvenido de nuevo, esto es lo que ocurre hoy.</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="gap-2 h-10 px-5 rounded-lg border-border-subtle bg-card-dark text-slate-300 hover:text-white hover:border-slate-600 transition-colors text-sm font-medium">
-            <span className="material-symbols-outlined text-[18px]">download</span>
-            Exportar datos
-          </Button>
+          {/* {user?.role !== AdminRole.VERIFIER && (
+            <Button variant="outline" className="gap-2 h-10 px-5 rounded-lg border-border-subtle bg-card-dark text-slate-300 hover:text-white hover:border-slate-600 transition-colors text-sm font-medium">
+              <span className="material-symbols-outlined text-[18px]">download</span>
+              Exportar datos
+            </Button>
+          )} */}
           <Link to="/rifas/crear">
             <Button className="gap-2 h-10 px-5 rounded-lg bg-primary hover:bg-primary-dark text-white shadow-glow transition-all text-sm font-medium border-0">
               <span className="material-symbols-outlined text-[18px]">add</span>

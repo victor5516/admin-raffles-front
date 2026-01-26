@@ -32,6 +32,7 @@ export function EditRafflePage() {
           total_tickets: raffle.totalTickets,
           ticket_price: raffle.ticketPrice,
           digits_length: raffle.digitsLength,
+          min_tickets_per_purchase: raffle.minTicketsPerPurchase,
           deadline: localISOTime,
           imageUrl: raffle.imageUrl,
         });
@@ -56,6 +57,7 @@ export function EditRafflePage() {
         total_tickets: data.total_tickets,
         ticket_price: data.ticket_price,
         digits_length: data.digits_length,
+        min_tickets_per_purchase: data.min_tickets_per_purchase,
         status: status,
         deadline: new Date(data.deadline).toISOString(),
       };

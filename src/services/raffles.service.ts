@@ -13,6 +13,7 @@ export interface CreateRaffleDto {
   ticket_price: number;
   total_tickets: number;
   deadline: string;
+  min_tickets_per_purchase?: number;
   status?: RaffleStatus;
   // image handled separately
 }
@@ -28,6 +29,7 @@ export interface RaffleListItem {
   digitsLength: number;
   ticketPrice: number;
   totalTickets: number;
+  minTicketsPerPurchase?: number;
   imageUrl: string;
   deadline: string;
   status: RaffleStatus;
@@ -52,6 +54,7 @@ export const rafflesService = {
     formData.append('ticket_price', data.ticket_price.toString());
     formData.append('total_tickets', data.total_tickets.toString());
     formData.append('deadline', data.deadline);
+    if (data.min_tickets_per_purchase !== undefined) formData.append('min_tickets_per_purchase', data.min_tickets_per_purchase.toString());
     if (data.status) formData.append('status', data.status);
 
     // Append image if present
@@ -78,6 +81,7 @@ export const rafflesService = {
     if (data.ticket_price) formData.append('ticket_price', data.ticket_price.toString());
     if (data.total_tickets) formData.append('total_tickets', data.total_tickets.toString());
     if (data.deadline) formData.append('deadline', data.deadline);
+    if (data.min_tickets_per_purchase !== undefined) formData.append('min_tickets_per_purchase', data.min_tickets_per_purchase.toString());
     if (data.status) formData.append('status', data.status);
 
     if (imageFile) {
