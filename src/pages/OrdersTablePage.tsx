@@ -5,11 +5,14 @@ import { paymentMethodsService, type PaymentMethod } from "@/services/payment-me
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { AdminRole } from "@/services/auth.service";
 
 export function OrdersTablePage() {
   const { currency } = useParams();
   const [searchParams] = useSearchParams();
   const raffleId = searchParams.get('raffleId');
+  const { user } = useAuth();
 
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -541,13 +544,15 @@ export function OrdersTablePage() {
                                             >
                                                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
                                             </button>
-                                            <button
-                                                onClick={() => handleStatusUpdate(purchase.uid, PurchaseStatus.REJECTED)}
-                                                className="text-slate-400 hover:text-red-400 p-1.5 rounded hover:bg-red-500/10 transition-colors"
-                                                title="Rechazar"
-                                            >
-                                                <span className="material-symbols-outlined text-[18px]">cancel</span>
-                                            </button>
+                                            {user?.role !== AdminRole.VERIFIER && (
+                                                <button
+                                                    onClick={() => handleStatusUpdate(purchase.uid, PurchaseStatus.REJECTED)}
+                                                    className="text-slate-400 hover:text-red-400 p-1.5 rounded hover:bg-red-500/10 transition-colors"
+                                                    title="Rechazar"
+                                                >
+                                                    <span className="material-symbols-outlined text-[18px]">cancel</span>
+                                                </button>
+                                            )}
                                         </>
                                     )}
                                 </div>

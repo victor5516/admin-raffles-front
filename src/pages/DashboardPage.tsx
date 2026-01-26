@@ -6,8 +6,11 @@ import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { dashboardService, type DashboardOverviewResponse } from "@/services/dashboard.service";
 import { currenciesService, type Currency } from "@/services/currencies.service";
+import { useAuth } from "@/contexts/AuthContext";
+import { AdminRole } from "@/services/auth.service";
 
 export function DashboardPage() {
+  const { user } = useAuth();
   const [overview, setOverview] = useState<DashboardOverviewResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -126,36 +129,38 @@ export function DashboardPage() {
       )}
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Ingresos totales"
-          value={formatRevenue(metrics?.revenue.current ?? 0)}
-          change={formatPercent(metrics?.revenue.changePercent ?? 0)}
-          isPositive={metrics?.revenue.isPositive}
-          icon="payments"
-          iconColor="text-accent-gold"
-          iconBg="bg-accent-gold/10"
-          decoration={
-            <div className="absolute -right-4 top-8 w-24 h-16 opacity-10">
-              <svg className="stroke-accent-gold fill-none stroke-2" viewBox="0 0 100 50">
-                <path d="M0,50 Q25,40 50,20 T100,5"></path>
-              </svg>
-            </div>
-          }
-          footer={
-            <select
-              value={selectedCurrencyId ?? ""}
-              onChange={(e) => setSelectedCurrencyId(e.target.value || null)}
-              className="w-full h-8 rounded-md border border-border-subtle bg-background-dark px-2 py-1 text-xs ring-offset-background placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors text-slate-200"
-            >
-              {currencies.map((currency) => (
-                <option key={currency.uid} value={currency.uid}>
-                  {currency.symbol} - {currency.name}
-                </option>
-              ))}
-            </select>
-          }
-        />
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${user?.role !== AdminRole.VERIFIER ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
+        {user?.role !== AdminRole.VERIFIER && (
+          <MetricCard
+            title="Ingresos totales"
+            value={formatRevenue(metrics?.revenue.current ?? 0)}
+            change={formatPercent(metrics?.revenue.changePercent ?? 0)}
+            isPositive={metrics?.revenue.isPositive}
+            icon="payments"
+            iconColor="text-accent-gold"
+            iconBg="bg-accent-gold/10"
+            decoration={
+              <div className="absolute -right-4 top-8 w-24 h-16 opacity-10">
+                <svg className="stroke-accent-gold fill-none stroke-2" viewBox="0 0 100 50">
+                  <path d="M0,50 Q25,40 50,20 T100,5"></path>
+                </svg>
+              </div>
+            }
+            footer={
+              <select
+                value={selectedCurrencyId ?? ""}
+                onChange={(e) => setSelectedCurrencyId(e.target.value || null)}
+                className="w-full h-8 rounded-md border border-border-subtle bg-background-dark px-2 py-1 text-xs ring-offset-background placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors text-slate-200"
+              >
+                {currencies.map((currency) => (
+                  <option key={currency.uid} value={currency.uid}>
+                    {currency.symbol} - {currency.name}
+                  </option>
+                ))}
+              </select>
+            }
+          />
+        )}
         <MetricCard
           title="Boletos vendidos"
           value={formatCount.format(metrics?.ticketsSold.current ?? 0)}
